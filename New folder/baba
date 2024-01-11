@@ -1,0 +1,254 @@
+public class command {
+    private boolean graveyard = true;
+    private boolean isGraveYardMobsKill = false;
+    private boolean theShadowyEnclave = false;
+    private boolean theShadowyEnclaveMobsKill = false;
+    private boolean theShadowyEnclaveUnlock = false;
+    private boolean theTreacherousMountainPass = true;
+    private boolean theTreacherousMountainPassKill = false;
+    private boolean theTreacherousMountainPassUnlock = false;
+    private boolean isWitchDead = false;
+    private boolean isVampireDead = false;
+    private boolean isWerewolfDead = false;
+    private boolean isZombieDead = false;
+    private boolean isSkellDead = false;
+    private boolean isGhostDead = false;
+    private boolean isDragonDead = false;
+    private boolean isDrakeDead = false;
+    private boolean isTrollDead = false;
+    private boolean currentEnemyIsDead;
+    static Scanner input = new Scanner(System.in);
+    static player player = new player();
+
+    public void showPlayerStats() {
+        System.out.println("                   [Player Stats] ");
+        System.out.println("Name: " + player.getName());
+        System.out.print("Health Points: " + player.getHp() + "/" + player.getMaxHp());
+        System.out.println("        | Defense    : " + player.getDefense());
+        System.out.print("Damage       : " + player.getDamage());
+        System.out.println("            | Strength   : " + player.getStrength());
+        System.out.print("Level        : " + player.getLevel());
+        System.out.println("            | Experience : " + player.getExperience() + "/" + player.getBaseExpRequired());
+
+        System.out.println("Stat Points  : " + player.getStatPoints());
+        System.out.println("[1]: lvlup [2]: Distribute Statpoint [3]: Back");
+
+        int goback = input.nextInt();
+        switch (goback) {
+            case 1:
+                player.levelUp();
+                showPlayerStats();
+                break;
+            case 2:
+                distributeStatPoint();
+                break;
+            case 3:
+                looby();
+                break;
+            default:
+                showPlayerStats();
+                break;
+        }
+    }
+
+    private void distributeStatPoint() {
+        if (player.getStatPoints() <= 0) {
+            slowPrint(" No stat point remaining");
+            menu();
+        } else {
+            System.out.println("Choose a stat to increase\n[1]: Defense [2]: Strength [3]: Back");
+            int statInc = input.nextInt();
+            switch (statInc) {
+                case 1:
+                    increaseDefense();
+                    break;
+                case 2:
+                    increaseStrength();
+                    break;
+                default:
+                    menu();
+                    break;
+            }
+        }
+    }
+
+    private void increaseDefense() {
+        int defUp = player.getDefense() + 1;
+        player.setDefense(defUp);
+        player.setMaxHp(defUp);
+        player.setHp(player.getMaxHp());
+        slowPrint("Defense stat increased to " + player.getDefense());
+        slowPrint("HP increased to " + player.getHp() + "/" + player.getMaxHp());
+        player.setStatPoints(1);
+        distributeStatPoint();
+    }
+
+    private void increaseStrength() {
+        int prevDamage = player.getDamage();
+        int strUp = player.getStrength() + 1;
+        player.setStrength(strUp);
+        player.setDamage(strUp);
+        slowPrint("Strength stat increased to " + player.getStrength());
+        slowPrint("Damage increased from " + prevDamage + " to " + player.getDamage());
+        player.setStatPoints(1);
+        distributeStatPoint();
+    }
+
+    public void looby() {
+        try {
+            System.out.println("------------------------------------------------------------------------------------------");
+            System.out.println("        [Medieval Adventure]");
+            slowPrint("[1]: Explore \n[2]: Restart Game");
+            int menuInput = input.nextInt();
+            switch (menuInput) {
+                case 1:
+                    if (isGameOver()) {
+                        slowPrint("You're Dead you cant explore");
+                        revive();
+                        looby();
+                    }
+                    System.out.println("------------------------------------------------------------------------------------------");
+                    System.out.println("            [Maps]");
+
+                    slowPrint("[1]: The Cursed Catacombs ");
+                    if (theShadowyEnclaveUnlock) {
+                        slowPrint("[2]: The Shadowy Enclave");
+                    } else {
+                        slowPrint("[2]: [Locked]");
+                    }
+                    if (theTreacherousMountainPassUnlock) {
+                        slowPrint("[3]: The Treacherous MountainPass Unlock");
+                    } else {
+                        slowPrint("[3]: [Locked]");
+                    }
+                    int mapInput = input.nextInt();
+                    switch (mapInput) {
+                        case 1:
+                            enterGraveyard();
+                            break;
+                        case 2:
+                            if (theShadowyEnclaveUnlock) {
+                                theShadowyEnclave();
+                            }
+                            break;
+                        case 3:
+                            if (theTreacherousMountainPassUnlock) {
+                                theTreacherousMountainPass();
+                            }
+                            break;
+                        default:
+                            System.out.println("Enter a valid command");
+                            looby();
+                            break;
+                    }
+                    break;
+                case 2:
+                    restartGame();
+                    break;
+                default:
+                    System.out.println("Enter a valid command");
+                    looby();
+                    break;
+            }
+        } catch (InputMismatchException e) {
+            System.out.println("Please enter a valid number.");
+            // Clear the invalid input from the scanner
+            looby(); // Restart the lobby
+        }
+    }
+
+    public void restartGame() {
+        graveyard = true;
+        player.resetPlayerStats();
+        game();
+    }
+
+    public void gameIntro() {
+        slowPrint("Welcome to the Medieval Adventure game!");
+        System.out.println("------------------------------------------------------------------------------------------");
+        if (player.getName().isBlank()) {
+            slowPrint("What is your name brave Knight? ");
+            player.setName(input.nextLine());
+            System.out.println("------------------------------------------------------------------------------------------");
+            slowPrint("You, " + player.getName() + ", a brave knight who must face 10 enemies in order to save the princess.");
+            /*slowPrint("For each enemy, you will be given 2 or 3 choices on how to fight them." +
+                    "Choose wisely, as only one choice will lead you to victory." +
+                    "If you choose the wrong option, you will lose the game.");*/
+            slowPrint("Good luck!");
+        }
+    }
+
+    public void ending() {
+        slowPrint("You've Cleared and kill all the mobs");
+    }
+
+    public void game() {
+        gameIntro();
+        looby();
+        ending();
+    }
+
+    public void slowPrint(String text) {
+        for (char c : text.toCharArray()) {
+            System.out.print(c);
+            try {
+                TimeUnit.MILLISECONDS.sleep(50); // Adjust the delay time (in milliseconds) as needed
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        System.out.println(); // Print a new line after the text is displayed
+    }
+
+    public void delayPrint(String text, int delayTime) {
+        for (int i = 0; i < text.length(); i++) {
+            System.out.print(text.charAt(i));
+        }
+        try {
+            TimeUnit.MILLISECONDS.sleep(delayTime);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        System.out.println();
+    }
+
+    public void slowPrintAdj(String text, int delay) {
+        for (char c : text.toCharArray()) {
+            System.out.print(c);
+            try {
+                TimeUnit.MILLISECONDS.sleep(delay); // Adjust the delay time (in milliseconds) as needed
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        System.out.println(); // Print a new line after the text is displayed
+    }
+
+    public void enterGraveyard() {
+        while (!isGameOver()) {
+            if (graveyard) {
+                slowPrint("Welcome to The Cursed Catacombs");
+                slowPrint("The air is thick with musty dampness and a faint scent of decay.");
+                slowPrint("Whispers echo through the halls, and an unnerving silence lingers" +
+                        "between occasional distant moans or bone-chilling sounds.");
+                graveyard = false;
+            }
+
+            while (!isSkellDead) {
+                if (skelle.getHp() <= 0) {
+                    isSkellDead = true;
+                }
+                encounter.fightSkeleton();
+            }
+
+            enterRoom();
+
+            while (!isZombieDead && !isGameOver) {
+                encounter.fightZombie();
+                if (zombie.getHp() <= 0) {
+                    isZombieDead = true;
+                }
+            }
+
+            while (!isGhostDead && !isGameOver) {
+                encounter.fightG
